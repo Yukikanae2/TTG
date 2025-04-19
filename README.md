@@ -44,9 +44,8 @@ Prerequisites:
 2. Set up the backend:
 
   ```bash
-  uv venv
-  source venv/bin/activate
-  uv sync
+  uv sync 
+  source ./.venv/bin/activate
   ```
 
 3. Add the following to your `.env` file:
