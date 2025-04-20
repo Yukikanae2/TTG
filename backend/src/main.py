@@ -151,6 +151,9 @@ async def websocket_endpoint(
         while True:
             try:
                 text = await websocket.receive_text()
+                if text == "ping":
+                    print(f"Received ping from {client_id}")
+                    continue
                 await manager.handle_message(client_id, text)
             except WebSocketDisconnect:
                 break
