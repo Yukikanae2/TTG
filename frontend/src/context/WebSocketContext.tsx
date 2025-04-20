@@ -77,6 +77,11 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
         ws.onopen = () => {
           clearTimeout(timeout);
           setIsConnected(true);
+          setInterval(() => {
+            if (ws.readyState === WebSocket.OPEN) {
+              ws.send('ping');
+            }
+          }, 240000); // Ping every 4 mins
           setIsProcessing(true);
           resolve();
         };
