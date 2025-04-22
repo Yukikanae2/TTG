@@ -1,6 +1,6 @@
 import { Button } from "./ui/button"
 import { Card } from "./ui/card"
-import { Input } from "./ui/input"
+import { Textarea } from "./ui/textarea"
 import { ScrollArea } from "./ui/scroll-area"
 import { useNavigate, useParams } from "react-router-dom"
 import { SendHorizontal } from "lucide-react"
@@ -23,7 +23,7 @@ export function Chat() {
   const [inputValue, setInputValue] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [connectionError, setConnectionError] = useState<string>("")
-  const inputRef = useRef<HTMLInputElement>(null)
+  const inputRef = useRef<HTMLTextAreaElement>(null)
   const connectionAttemptedRef = useRef(false)
   const welcomeMessageShownRef = useRef(false)
 
@@ -323,10 +323,10 @@ export function Chat() {
         </ScrollArea>
 
         {/* Input Area */}
-        <div className="py-4 bg-background px-4 sm:px-8">
+        <div className="py-2 bg-background px-4 sm:px-8">
           <div className="flex gap-2 sm:gap-3 items-center justify-end">
             <div className="flex-1">
-              <Input 
+              <Textarea
                 ref={inputRef}
                 placeholder={
                   isProcessing ? "Processing repository..."
@@ -335,13 +335,21 @@ export function Chat() {
                 }
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                className="text-[14px] sm:text-[15px] py-5 sm:py-6 px-4 sm:px-6 rounded-2xl border-2 border-border bg-secondary-background shadow-shadow text-foreground"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && e.shiftKey) {
+                    e.preventDefault();
+                    setInputValue(prev => prev + '\n');
+                  } else if (e.key === 'Enter') {
+                    handleSend();
+                  }
+                }}
+                className="text-[14px] sm:text-[15px] rounded-2xl border-2 border-border bg-secondary-background shadow-shadow text-foreground"
+                style={{ height: '40px' }}
                 disabled={!isConnected || isLoading || isProcessing}
               />
             </div>
             <div>
-              <Button 
+              <Button
                 size="icon" 
                 className="bg-main hover:bg-main/90 text-main-foreground h-12 w-12 sm:h-14 sm:w-14 rounded-2xl shadow-shadow flex items-center justify-center cursor-pointer"
                 onClick={handleSend}
