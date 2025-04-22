@@ -87,6 +87,9 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
         };
 
         ws.onmessage = (event) => {
+          if (event.data === 'pong') {
+            return;
+          }
           if (event.data === 'repo_processed') {
             setIsProcessing(false);
             connectingRef.current = false;

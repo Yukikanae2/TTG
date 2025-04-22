@@ -1,9 +1,9 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.utils.ingest import ingest_repo # type: ignore
-from src.utils.llm import generate_response # type: ignore
-from src.utils.prompt import generate_prompt # type: ignore
+from src.utils.ingest import ingest_repo  # type: ignore
+from src.utils.llm import generate_response  # type: ignore
+from src.utils.prompt import generate_prompt  # type: ignore
 
 from typing import Any
 
@@ -47,18 +47,18 @@ class ConnectionManager:
     def __init__(self) -> None:
         self.active_connections: dict[str, dict[str, Any]] = {}
         """
-        {
-            "client_id": {
-                "websocket": websocket object,
-                "history": [(prompt1, response1), (prompt2, response2), ...],
-                "owner": owner,
-                "repo": repo,
-                "summary": summary,
-                "tree": tree,
-                "content": content
-            }
-        }
-        """
+		{
+			"client_id": {
+				"websocket": websocket object,
+				"history": [(prompt1, response1), (prompt2, response2), ...],
+				"owner": owner,
+				"repo": repo,
+				"summary": summary,
+				"tree": tree,
+				"content": content
+			}
+		}
+		"""
 
     async def connect(
         self, websocket: WebSocket, client_id: str, owner: str, repo: str
@@ -106,30 +106,35 @@ class ConnectionManager:
             del self.active_connections[client_id]
 
     async def handle_message(self, client_id: str, text: str) -> None:
-        query = text
-        owner = self.active_connections[client_id]["owner"]  # noqa: F841
-        repo = self.active_connections[client_id]["repo"]  # noqa: F841
-        summary = self.active_connections[client_id]["summary"]  # noqa: F841
-        tree = self.active_connections[client_id]["tree"]
-        content = self.active_connections[client_id]["content"]
-        history = self.active_connections[client_id]["history"]
+        if text == "ping":
+            await self.active_connections[client_id]["websocket"].send_text("pong")
+        else:
+            query = text
+            owner = self.active_connections[client_id]["owner"]  # noqa: F841
+            repo = self.active_connections[client_id]["repo"]  # noqa: F841
+            summary = self.active_connections[client_id]["summary"]  # noqa: F841
+            tree = self.active_connections[client_id]["tree"]
+            content = self.active_connections[client_id]["content"]
+            history = self.active_connections[client_id]["history"]
 
-        logging.info(f"Generating prompt for query: {query}...")
-        prompt = await generate_prompt(query, history, tree, content)
-        logging.info(f"Prompt generated: {prompt[:100]}...")
-        try:
-            response = await generate_response(prompt)
-            logging.info(f"Response generated: {response}")
-            await self.active_connections[client_id]["websocket"].send_text(response)
-            self.active_connections[client_id]["history"].append((query, response))
-        except ValueError as e:
-            if "OUT_OF_KEYS" in str(e):
-                error_msg = "All API keys have been exhausted. Please try again in a few minutes."
+            logging.info(f"Generating prompt for query: {query}...")
+            prompt = await generate_prompt(query, history, tree, content)
+            logging.info(f"Prompt generated: {prompt[:100]}...")
+            try:
+                response = await generate_response(prompt)
+                logging.info(f"Response generated: {response}")
                 await self.active_connections[client_id]["websocket"].send_text(
-                    error_msg
+                    response
                 )
-            else:
-                raise
+                self.active_connections[client_id]["history"].append((query, response))
+            except ValueError as e:
+                if "OUT_OF_KEYS" in str(e):
+                    error_msg = "All API keys have been exhausted. Please try again in a few minutes."
+                    await self.active_connections[client_id]["websocket"].send_text(
+                        error_msg
+                    )
+                else:
+                    raise
 
     async def get_history(self, client_id: str) -> list[tuple[str, str]]:
         if client_id in self.active_connections:
