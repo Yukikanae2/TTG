@@ -76,7 +76,7 @@ function LandingPage() {
 
         <div className="flex flex-col items-center justify-center w-full max-w-[800px] -mt-4 sm:-mt-8 px-4">
           <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-center mb-8">
-            Chat with any public GitHub repository. Skip spending hours reading docs and get the answers you are looking for instantly 🚀
+            Chat with any public GitHub repository. No more endless docs. Why read when you can ask and get answers instantly? 🚀
           </h2>
           
           <Card className="w-full relative mb-6">
