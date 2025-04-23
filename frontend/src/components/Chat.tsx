@@ -105,47 +105,67 @@ export function Chat() {
   // Focus input on mount and whenever it should be active
   useEffect(() => {
     if (!isLoading && !isProcessing && isConnected) {
-      inputRef.current?.focus()
+      inputRef.current?.focus();
     }
-  }, [isLoading, isProcessing, isConnected])
+  }, [isLoading, isProcessing, isConnected]);
 
   // Handle WebSocket messages
   useEffect(() => {
     if (lastMessage === 'repo_processed' && !welcomeMessageShownRef.current) {
-      welcomeMessageShownRef.current = true
-      addMessage("Hello! I've analyzed this repository. What would you like to know?", 'assistant')
+      welcomeMessageShownRef.current = true;
+      addMessage("Hello! I've analyzed this repository. What would you like to know?", 'assistant');
     } else if (lastMessage && lastMessage !== 'repo_processed') {
-      addMessage(lastMessage, 'assistant')
-      setIsLoading(false)
+      addMessage(lastMessage, 'assistant');
+      setIsLoading(false);
     }
-  }, [lastMessage])
+  }, [lastMessage]);
 
   // Scroll to bottom when messages change or loading state changes
+  const [showScrollButton, setShowScrollButton] = useState(false);
+  // Remove the old scrollToBottom function and its useEffect
+  
+  // Add new scroll position tracking
+  const handleScroll = () => {
+    const viewport = document.querySelector('[data-radix-scroll-area-viewport]');
+    if (viewport) {
+      const { scrollTop, scrollHeight, clientHeight } = viewport;
+      const isAtBottom = scrollHeight - scrollTop - clientHeight < 50;
+      setShowScrollButton(!isAtBottom);
+    }
+  };
+  
+  useEffect(() => {
+    const viewport = document.querySelector('[data-radix-scroll-area-viewport]');
+    if (viewport) {
+      viewport.addEventListener('scroll', handleScroll);
+      return () => viewport.removeEventListener('scroll', handleScroll);
+    }
+  }, []);
+  
   const scrollToBottom = () => {
-    requestAnimationFrame(() => {
-      const viewport = document.querySelector('[data-radix-scroll-area-viewport]')
-      if (viewport) {
-        viewport.scrollTo({
-          top: viewport.scrollHeight,
-          behavior: 'smooth'
-        })
-      }
-    })
-  }
+    const viewport = document.querySelector('[data-radix-scroll-area-viewport]');
+    if (viewport) {
+      viewport.scrollTo({
+        top: viewport.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
+  };
 
   useEffect(() => {
     scrollToBottom()
   }, [messages, isLoading])
 
+  // Remove the auto-scroll useEffect
   const handleSend = () => {
-    if (!inputValue.trim() || !isConnected || isLoading || isProcessing) return
+    if (!inputValue.trim() || !isConnected || isLoading || isProcessing) return;
 
-    addMessage(inputValue, 'user')
-    setIsLoading(true)
-    sendMessage(inputValue)
-    setInputValue("")
-    inputRef.current?.focus()
-  }
+    addMessage(inputValue, 'user');
+    setIsLoading(true);
+    sendMessage(inputValue);
+    setInputValue("");
+    inputRef.current?.focus();
+  };
 
   if (connectionError || lastMessage?.startsWith('error:') || lastMessage?.startsWith('All API keys')) {
     const isRepoTooLarge = lastMessage === 'error:repo_too_large';
@@ -244,7 +264,7 @@ export function Chat() {
 
       {/* Chat Container */}
       <div className="flex-1 w-full mx-auto max-w-[900px]">
-        <ScrollArea className="h-[calc(100vh-12rem)]">
+        <ScrollArea className="h-[calc(100vh-12rem)]" onScrollCapture={handleScroll}>
           <div className="py-4 px-4 sm:px-8 space-y-6">
             {/* Repository Info */}
             <div className="flex justify-center mb-8">
@@ -321,6 +341,33 @@ export function Chat() {
             )}
           </div>
         </ScrollArea>
+
+        {/* Add Scroll to Bottom Button */}
+        <div className="relative">
+          {showScrollButton && (
+            <Button
+              size="icon"
+              variant="noShadow"
+              className="absolute mx-6 bottom-4 right-4 h-10 w-10 rounded-full shadow-lg bg-main hover:bg-main/90 text-main-foreground z-50"
+              onClick={scrollToBottom}
+            >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M12 19V5" />
+              <path d="m5 12 7 7 7-7" />
+            </svg>
+          </Button>
+          )}
+        </div>
 
         {/* Input Area */}
         <div className="py-2 bg-background px-4 sm:px-8">
