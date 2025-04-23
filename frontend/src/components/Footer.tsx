@@ -21,7 +21,7 @@ export function Footer() {
             </a>
           </div>
           <a
-            href="https://github.com/HarishChandran3304/TTG/issues"
+            href="https://github.com/HarishChandran3304/TTG/issues/new"
             target="_blank"
             rel="noopener noreferrer"
             className="text-foreground/50 text-xs hover:text-main transition-colors underline underline-offset-2 text-right"
