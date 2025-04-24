@@ -172,6 +172,9 @@ async def websocket_endpoint(
         await manager.disconnect(client_id)
         print(f"Client {client_id} disconnected")
 
+@app.get("/healthcheck")
+async def healthcheck() -> dict[str, str]:
+    return {"status": "ok"}
 
 async def main():
     summary, tree, content = await ingest_repo("https://github.com/EnhancedJax/Bagels")
