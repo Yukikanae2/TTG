@@ -2,7 +2,7 @@ name: Keep Cloud Run Warm
 
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "*/s * * * *"
   workflow_dispatch:
 
 jobs:
